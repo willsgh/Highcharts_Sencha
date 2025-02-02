@@ -1,5 +1,5 @@
 /**
- * @author 
+ * @author
  * Joe Kuan <kuan.joe@gmail.com>
  *
  * version 3.2.1
@@ -8,7 +8,7 @@
  *
  * Documentation last updated: 14 Sept 2014
  *
- * A much improved & ported from ExtJs 3 Highchart adapter. 
+ * A much improved & ported from ExtJs 3 Highchart adapter.
  *
  * - Supports the latest Highcharts 5
  * - Supports both Sencha ExtJs 4 and Touch 2
@@ -16,7 +16,7 @@
  * - Supports Highmaps
  * - Supports 3D Charts
  *
- * In order to use this extension, you are expected to know how to use Highcharts and Sencha products (ExtJs 4 &amp; Touch 2). 
+ * In order to use this extension, you are expected to know how to use Highcharts and Sencha products (ExtJs 4 &amp; Touch 2).
  *
  * # Configuring Highcharts Extension
  * The Highcharts extension requires a few changes from an existing Highcharts configuration. Suppose we already have a
@@ -42,8 +42,8 @@
  *
  * ## Step 1: Remove data related fields
  *
- * The first step is to take out the configuration 
- * object and remove any data related properties such as: *xAxis.categories* and *series[0].data*. Then removes 
+ * The first step is to take out the configuration
+ * object and remove any data related properties such as: *xAxis.categories* and *series[0].data*. Then removes
  * *chart.renderTo* option as the extension will fill in that property internally. This leaves us with the following config:
  *
  *      chart: {
@@ -58,7 +58,7 @@
  *
  * ## Step 2: Create chartConfig
  *
- * The next step is to create an object called, *chartConfig*, and put the above configuration in it. Then we extract the 
+ * The next step is to create an object called, *chartConfig*, and put the above configuration in it. Then we extract the
  * series array to an upper level which gives the followings:
  *
  *     series: [{
@@ -83,7 +83,7 @@
  *              {name: 'value',  type: 'float'}
  *          ]
  *     });
- *     
+ *
  *     var store = Ext.create('Ext.data.Store', {
  *        model: 'SampleData',
  *        proxy: {
@@ -96,8 +96,8 @@
  *        },
  *        autoLoad: false
  *      });
- * Then we modify the series array with data mappings to Store; we add *xField* outside the series array 
- * as categories data and *dataIndex* for the y-axis values. For historical reason, we can also use *yField*, 
+ * Then we modify the series array with data mappings to Store; we add *xField* outside the series array
+ * as categories data and *dataIndex* for the y-axis values. For historical reason, we can also use *yField*,
  * just an alias name for *dataIndex*.
  *
  *      series:[{
@@ -136,8 +136,8 @@
  *       }).show();
  *
  * # Updating Highcharts chart properties dynamically
- * Some of the Highcharts properties cannot be updated interactively such as relocating legend box, 
- * switching column charts stacking mode. The only way is to manually destroy and create the whole chart again. 
+ * Some of the Highcharts properties cannot be updated interactively such as relocating legend box,
+ * switching column charts stacking mode. The only way is to manually destroy and create the whole chart again.
  * In Highcharts extension, this can be done in an easier fashion. The Highcharts component itself
  * contains a *chartConfig* object which holds the existing native Highcharts configurations. At runtime,
  * options inside *chartConfig* can be modified and call method *draw* which interally destroys and
@@ -148,14 +148,14 @@
  *                   });
  *       chart.chartConfig.plotOptions.column.stacking = 'normal';
  *       chart.draw();
- * 
+ *
  * # Mapping between JsonStore and series data
  * The data mapping between JsonStore and chart series option is quite straightforward. Please refers
- * to the desired {@link Chart.ux.Highcharts.Serie} class and {@link Chart.ux.Highcharts.Serie#method-getData} 
+ * to the desired {@link Chart.ux.Highcharts.Serie} class and {@link Chart.ux.Highcharts.Serie#method-getData}
  * method for more details on data mapping.
  *
  * # Multiple series with non-uniform datasets (Irregular data)
- * For plotting multiple series that do not have the same number of data points, see 
+ * For plotting multiple series that do not have the same number of data points, see
  * {@link Chart.ux.Highcharts.Serie} class and {@link Chart.ux.Highcharts.Serie#cfg-dataIndex} configuration for
  *  more details on data mapping.
  *
@@ -179,9 +179,9 @@
  * using the 'data' field. This can further called by a separate store's load method triggered by some form of
  * interactions from the UI.
  */
-Ext.define("Chart.ux.Highcharts", {
-    extend : 'Ext.Component',
-    alias : ['widget.highchart', 'widget.highcharts'],
+Ext.define('Chart.ux.Highcharts', {
+    extend: 'Ext.Component',
+    alias: ['widget.highchart', 'widget.highcharts'],
 
     statics: {
         /***
@@ -193,15 +193,15 @@ Ext.define("Chart.ux.Highcharts", {
         /***
          * @property {Object} sencha
          * @readonly
-         * Contain shorthand representations of which Sencha product is the 
-         * Highcharts extension currently running in. 
-	 *
+         * Contain shorthand representations of which Sencha product is the
+         * Highcharts extension currently running in.
+         *
          *     // Under Sencha ExtJs
          *     { product: 'e', major: 4, name: 'e4' }
          *     // Under Sencha Touch 2
          *     { product: 't', major: 2, name: 't2' }
          */
-        sencha: function() {
+        sencha: (function () {
             if (Ext.versions.extjs) {
                 return {
                     product: 'e',
@@ -223,7 +223,7 @@ Ext.define("Chart.ux.Highcharts", {
                 major: null,
                 name: null
             };
-        }()
+        })()
     },
 
     /***
@@ -232,47 +232,47 @@ Ext.define("Chart.ux.Highcharts", {
      */
     debug: false,
 
-    switchDebug : function() {
+    switchDebug: function () {
         this.debug = true;
     },
 
-    basicSerieCls: "Chart.ux.Highcharts.Serie",
+    basicSerieCls: 'Chart.ux.Highcharts.Serie',
 
     /***
      * This method is called by other routines within this extension to output debugging log.
      * This method can be overrided with Ext.emptyFn for product deployment
      * @param {String} msg debug message to the console
      */
-    log: function(msg) {
-        (typeof console !== 'undefined' && this.debug) && console.log(msg);
+    log: function (msg) {
+        typeof console !== 'undefined' && this.debug && console.log(msg);
     },
-    
+
     /**
      * @cfg {Object} defaultSerieType
      * If the series.type is not defined, then it will follow the precedence of
      * Highcharts (inside chartConfig) chart.type -> Highcharts chart.defaultSeriesType ->
      * and finally this option
      */
-    defaultSerieType : 'line',
-    
+    defaultSerieType: 'line',
+
     /**
      * @cfg {Boolean} resizable
      * True to allow resizing, false to disable resizing (defaults to true).
      */
-    resizable : true,
+    resizable: true,
 
     /**
      * @cfg {Number} updateDelay
      * A delay to call {@link Chart.ux.Highcharts#method-draw} method
      */
-    updateDelay : 0,
+    updateDelay: 0,
 
     /**
      * @cfg {Object} loadMask An {@link Ext.LoadMask} config or true to mask the
      * chart while
      * loading. Defaults to false.
      */
-    loadMask : false,
+    loadMask: false,
 
     /***
      * @cfg {String} loadMaskMsg Message display for loadmask
@@ -280,24 +280,23 @@ Ext.define("Chart.ux.Highcharts", {
     loadMaskMsg: 'Loading ... ',
 
     /**
-     * @cfg {Boolean} refreshOnChange 
+     * @cfg {Boolean} refreshOnChange
      * chart refresh data when store datachanged event is triggered,
      * i.e. records are added, removed, or updated.
-     * If your application is just purely showing data from store load, 
+     * If your application is just purely showing data from store load,
      * then you don't need this.
      */
     refreshOnChange: false,
-
     refreshOnLoad: true,
 
     /**
      * @cfg {Boolean}
-     * this config enable or disable chart animation 
+     * this config enable or disable chart animation
      */
     animation: true,
     updateAnim: true,
 
-    /*** 
+    /***
      * @cfg {Boolean} lineShift
      * The line shift is achieved by comparing the existing x values in the chart
      * and x values from the store record and work out the extra record.
@@ -311,20 +310,20 @@ Ext.define("Chart.ux.Highcharts", {
      * @cfg {Boolean}
      * In a nutshell, keeps this option to true.
      *
-     * Since Highcharts initial and update animations are not the same, 
-     * if you want to make sure there is initial animation, then you should create store 
-     * and extension in specific sequence. First, set the {@link Ext.data.Store#cfg-autoLoad} 
-     * option to false, create the Highcharts component with the store, then call the 
-     * {@link Ext.data.Store#method-load} method. The *initAnimAfterLoad* defers creating 
-     * the chart internally until the store is loaded. Disabling it, the extension will create 
+     * Since Highcharts initial and update animations are not the same,
+     * if you want to make sure there is initial animation, then you should create store
+     * and extension in specific sequence. First, set the {@link Ext.data.Store#cfg-autoLoad}
+     * option to false, create the Highcharts component with the store, then call the
+     * {@link Ext.data.Store#method-load} method. The *initAnimAfterLoad* defers creating
+     * the chart internally until the store is loaded. Disabling it, the extension will create
      * the chart instantly and you will only see the update animation after the load.
      */
     initAnimAfterLoad: true,
 
     /**
-     * @cfg {Function} afterChartRendered 
+     * @cfg {Function} afterChartRendered
      * callback for after the Highcharts
-     * is rendered. **Note**: Do not call initial {@link Ext.data.Store#method-load} inside this handler, 
+     * is rendered. **Note**: Do not call initial {@link Ext.data.Store#method-load} inside this handler,
      * especially with *initAnimAfterLoad* set to true because {@link Ext.data.Store#method-load} will
      * never be called as the chart is deferring to render waiting for the store data. Here is an example
      * of how this should be called. This 'this' keyword refers to the Highcharts ExtJs component whereas
@@ -354,14 +353,13 @@ Ext.define("Chart.ux.Highcharts", {
      */
     afterChartRendered: null,
 
-    
-    constructor: function(config) {
+    constructor: function (config) {
         config.listeners && (this.afterChartRendered = config.listeners.afterChartRendered);
         this.afterChartRendered && (this.afterChartRendered = Ext.bind(this.afterChartRendered, this));
         if (config.animation == false) {
             this.animation = false;
             this.initAnim = false;
-            this.updateAnim = false; 
+            this.updateAnim = false;
             this.initAnimAfterLoad = false;
         }
 
@@ -373,13 +371,13 @@ Ext.define("Chart.ux.Highcharts", {
         }
     },
 
-    initComponent : function() {
-        if(this.store) {
+    initComponent: function () {
+        if (this.store) {
             this.store = Ext.data.StoreManager.lookup(this.store);
         }
         if (this.animation == false) {
             this.initAnim = false;
-            this.updateAnim = false; 
+            this.updateAnim = false;
             this.initAnimAfterLoad = false;
         }
 
@@ -399,24 +397,29 @@ Ext.define("Chart.ux.Highcharts", {
      * @param {Array} series An array of series configuration objects
      * @param {Boolean} append Append the series if true, otherwise replace all the existing chart series. Optional parameter, Defaults to true if not specified
      */
-    addSeries : function(series, append) {
-
-        append = (append === null || append === true) ? true : false;
+    addSeries: function (series, append) {
+        append = append === null || append === true ? true : false;
 
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        var n = new Array(), c = new Array(), cls, serieObject;
+        var n = new Array(),
+            c = new Array(),
+            cls,
+            serieObject;
         // Add empty data to the serie or just leave it normal. Bug in HighCharts?
-        for(var i = 0; i < series.length; i++) {
+        for (var i = 0; i < series.length; i++) {
             // Clone Serie config for scope injection
             var serie = Ext.clone(series[i]);
-            if(!serie.serieCls) {
-                cls = serie.type || _this.chartConfig.chart.type || 
-                    _this.chartConfig.chart.defaultSeriesType || _this.defaultSerieType;
+            if (!serie.serieCls) {
+                cls =
+                    serie.type ||
+                    _this.chartConfig.chart.type ||
+                    _this.chartConfig.chart.defaultSeriesType ||
+                    _this.defaultSerieType;
 
-		// See alternateClassName
-		cls = (cls) ? "highcharts." + cls : _this.basicSerieCls;
+                // See alternateClassName
+                cls = cls ? 'highcharts.' + cls : _this.basicSerieCls;
 
                 serieObject = Ext.create(cls, serie);
             } else {
@@ -430,8 +433,8 @@ Ext.define("Chart.ux.Highcharts", {
         }
 
         // Show in chart
-        if(this.chart) {
-            if(!append) {
+        if (this.chart) {
+            if (!append) {
                 this.removeAllSeries();
                 _this.series = n;
                 _this.chartConfig.series = c;
@@ -439,15 +442,14 @@ Ext.define("Chart.ux.Highcharts", {
                 _this.chartConfig.series = _this.chartConfig.series ? _this.chartConfig.series.concat(c) : c;
                 _this.series = _this.series ? _this.series.concat(n) : n;
             }
-            for(var i = 0; i < c.length; i++) {
+            for (var i = 0; i < c.length; i++) {
                 this.chart.addSeries(c[i], true);
             }
             this.refresh();
 
             // Set the data in the config.
         } else {
-
-            if(append) {
+            if (append) {
                 _this.chartConfig.series = _this.chartConfig.series ? _this.chartConfig.series.concat(c) : c;
                 _this.series = _this.series ? _this.series.concat(n) : n;
             } else {
@@ -458,16 +460,16 @@ Ext.define("Chart.ux.Highcharts", {
     },
 
     /***
-     * Remove particular series from the chart. 
+     * Remove particular series from the chart.
      * @param {Number} id the index value in the chart series array
      * @param {Boolean} redraw Set it to true to immediate redraw the chart to reflect the change
      */
-    removeSerie : function(id, redraw) {
+    removeSerie: function (id, redraw) {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
         redraw = redraw || true;
-        if(this.chart) {
+        if (this.chart) {
             this.chart.series[id].remove(redraw);
             _this.chartConfig.series.splice(id, 1);
         }
@@ -478,18 +480,18 @@ Ext.define("Chart.ux.Highcharts", {
      * Remove all series in the chart. This also remove any categories
      * data along the axes
      */
-    removeAllSeries : function() {
+    removeAllSeries: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
-	if (_this.chart) {
-	    var sc = _this.chart.series.length;
-            for(var i = 0; i < sc; i++) {
-		this.removeSerie(0);
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
+        if (_this.chart) {
+            var sc = _this.chart.series.length;
+            for (var i = 0; i < sc; i++) {
+                this.removeSerie(0);
             }
-	}
+        }
         // Need to also clean up the previous categories data if
         // there are any
-        Ext.each(_this.chartConfig.xAxis, function(xAxis) {
+        Ext.each(_this.chartConfig.xAxis, function (xAxis) {
             delete xAxis.categories;
         });
     },
@@ -498,145 +500,137 @@ Ext.define("Chart.ux.Highcharts", {
      * Set the title of the chart and redraw the chart
      * @param {String} title Text to set the subtitle
      */
-    setTitle : function(title) {
-
+    setTitle: function (title) {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        if(_this.chartConfig.title)
-            _this.chartConfig.title.text = title;
+        if (_this.chartConfig.title) _this.chartConfig.title.text = title;
         else
             _this.chartConfig.title = {
-                text : title
+                text: title
             };
-        if(this.chart && this.chart.container)
-            this.draw();
+        if (this.chart && this.chart.container) this.draw();
     },
 
     /**
      * Set the subtitle of the chart and redraw the chart
      * @param {String} title Text to set the subtitle
      */
-    setSubTitle : function(title) {
-
+    setSubTitle: function (title) {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        if(_this.chartConfig.subtitle)
-            _this.chartConfig.subtitle.text = title;
+        if (_this.chartConfig.subtitle) _this.chartConfig.subtitle.text = title;
         else
             _this.chartConfig.subtitle = {
-                text : title
+                text: title
             };
-        if(this.chart && this.chart.container)
-            this.draw();
+        if (this.chart && this.chart.container) this.draw();
     },
 
-    initEvents : function() {
+    initEvents: function () {},
 
-    },
-
-    afterRender : function() {
-
+    afterRender: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        if(this.store)
-            this.bindStore(this.store, true);
+        if (this.store) this.bindStore(this.store, true);
 
         this.bindComponent(true);
 
         // Ext.applyIf causes problem in 4.1.x but works fine with
         // 4.0.x
         Ext.apply(_this.chartConfig.chart, {
-            renderTo : (this.statics().sencha.product == 't') ? this.element.dom : this.el.dom
+            renderTo: this.statics().sencha.product == 't' ? this.element.dom : this.el.dom
         });
 
         Ext.applyIf(_this.chartConfig, {
-            xAxis : [{}]
+            xAxis: [{}]
         });
 
-        if(_this.xField && this.store) {
+        if (_this.xField && this.store) {
             this.updatexAxisData();
         }
 
-        if(_this.series) {
-            this.log("Call addSeries");
+        if (_this.series) {
+            this.log('Call addSeries');
             this.addSeries(_this.series, false);
-        } else
-            _this.series = [];
+        } else _this.series = [];
 
         this.initEvents();
         // Make a delayed call to update the chart.
         this.update(0);
     },
 
-    onMove : function() {
-
-    },
+    onMove: function () {},
 
     /***
      *  @private
      */
     initDataBuilt: false,
-    
+
     /***
      *  @private
      *  Build the initial data set if there are data already
      *  inside the store.
      */
-    buildInitData : function() {
-
+    buildInitData: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
-        var series = null, chartConfigSeries = null;
-        var ptObject = null, record = null, colorField = null;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
+        var series = null,
+            chartConfigSeries = null;
+        var ptObject = null,
+            record = null,
+            colorField = null;
 
-	this.log("Call Highcharts buildInitData");
-	if (this.initDataBuilt) {
-	    this.log("Already built. Ignore");
-	    return;
-	}
-	
-        if (!this.store || this.store.isLoading() || 
-            !_this.chartConfig || _this.initAnim === false ||
-            _this.chartConfig.chart.animation === false) {
+        this.log('Call Highcharts buildInitData');
+        if (this.initDataBuilt) {
+            this.log('Already built. Ignore');
             return;
         }
 
-        var data = [], seriesCount = _this.series.length, i;
-        var items = this.store.data.items;
-        (_this.chartConfig.series === undefined) && (_this.chartConfig.series = []);
-        for( i = 0; i < seriesCount; i++) {
+        if (
+            !this.store ||
+            this.store.isLoading() ||
+            !_this.chartConfig ||
+            _this.initAnim === false ||
+            _this.chartConfig.chart.animation === false
+        ) {
+            return;
+        }
 
-            if (!_this.chartConfig.series[i])
-                _this.chartConfig.series[i] = { data: [] };
-            else 
-                _this.chartConfig.series[i].data = [];
+        var data = [],
+            seriesCount = _this.series.length,
+            i;
+        var items = this.store.data.items;
+        _this.chartConfig.series === undefined && (_this.chartConfig.series = []);
+        for (i = 0; i < seriesCount; i++) {
+            if (!_this.chartConfig.series[i]) _this.chartConfig.series[i] = { data: [] };
+            else _this.chartConfig.series[i].data = [];
 
             // Sort out the type for this series
             series = _this.series[i];
             series.buildInitData(items);
         }
-	
-	this.initDataBuilt = true;
+
+        this.initDataBuilt = true;
     },
 
     /**
      * This method is automatically called when the component is created.
-     * Alternatively, call this method to redraw the chart. 
-     * It internally destroys existing chart (if already display) and 
-     * re-creates the chart object. Call this method to reflect any structural changes 
-     * in chart configuration 
+     * Alternatively, call this method to redraw the chart.
+     * It internally destroys existing chart (if already display) and
+     * re-creates the chart object. Call this method to reflect any structural changes
+     * in chart configuration
      */
-    draw : function() {
+    draw: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        this.log("call draw");
-        if(this.chart && this.rendered) {
-            if(this.resizable) {
-                for(var i = 0; i < _this.series.length; i++) {
+        this.log('call draw');
+        if (this.chart && this.rendered) {
+            if (this.resizable) {
+                for (var i = 0; i < _this.series.length; i++) {
                     _this.series[i].visible = this.chart.series[i].visible;
                 }
 
@@ -651,20 +645,19 @@ Ext.define("Chart.ux.Highcharts", {
                 // Create a new chart
                 this.chart = new Highcharts.Chart(_this.chartConfig, this.afterChartRendered);
             }
-
-        } else if(this.rendered) {
+        } else if (this.rendered) {
             // Create the chart from fresh
             if (!this.initAnimAfterLoad || (this.store && this.store.getCount() > 0)) {
                 this.buildInitData();
                 this.chart = new Highcharts.Chart(_this.chartConfig, this.afterChartRendered);
-                this.log("initAnimAfterLoad is off, creating chart from fresh");
+                this.log('initAnimAfterLoad is off, creating chart from fresh');
             } else {
-                this.log("initAnimAfterLoad is on, defer creating chart");
+                this.log('initAnimAfterLoad is on, defer creating chart');
                 return;
             }
         }
 
-	/*
+        /*
 	if (Ext.isArray(_this.series)) {
             for( i = 0; i < _this.series.length; i++) {
 		if(!_this.series[i].visible)
@@ -684,34 +677,34 @@ Ext.define("Chart.ux.Highcharts", {
     /***
      * @deprecated
      **/
-    onContainerResize : function() {
-        Ext.log("onContainerResize");
+    onContainerResize: function () {
+        Ext.log('onContainerResize');
         this.draw();
     },
 
     //private
-    updatexAxisData : function() {
+    updatexAxisData: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        var data = [], items = this.store.data.items;
+        var data = [],
+            items = this.store.data.items;
 
-        if(_this.xField && this.store) {
-            for(var i = 0; i < items.length; i++) {
+        if (_this.xField && this.store) {
+            for (var i = 0; i < items.length; i++) {
                 data.push(items[i].data[_this.xField]);
             }
-            if(this.chart)
-                this.chart.xAxis[0].setCategories(data, true);
+            if (this.chart) this.chart.xAxis[0].setCategories(data, true);
             else if (Ext.isArray(_this.chartConfig.xAxis)) {
                 _this.chartConfig.xAxis[0].categories = data;
             } else {
                 _this.chartConfig.xAxis.categories = data;
-            } 
+            }
         }
     },
 
-    bindComponent : function(bind) {
-        if(bind) {
+    bindComponent: function (bind) {
+        if (bind) {
             this.on('move', this.onMove);
             this.on('resize', this._onResize);
         } else {
@@ -724,31 +717,30 @@ Ext.define("Chart.ux.Highcharts", {
      * Changes the data store bound to this chart and refreshes it.
      * @param {Store} store The store to bind to this chart
      */
-    bindStore : function(store, initial) {
-
-        if(!initial && this.store) {
-            if(store !== this.store && this.store.autoDestroy) {
+    bindStore: function (store, initial) {
+        if (!initial && this.store) {
+            if (store !== this.store && this.store.autoDestroy) {
                 this.store.destroy();
             } else {
-                this.store.un("datachanged", this.onDataChange, this);
-                this.store.un("load", this.onLoad, this);
-                this.store.un("add", this.onAdd, this);
-                this.store.un("remove", this.onRemove, this);
-                this.store.un("update", this.onUpdate, this);
-                this.store.un("clear", this.onClear, this);
+                this.store.un('datachanged', this.onDataChange, this);
+                this.store.un('load', this.onLoad, this);
+                this.store.un('add', this.onAdd, this);
+                this.store.un('remove', this.onRemove, this);
+                this.store.un('update', this.onUpdate, this);
+                this.store.un('clear', this.onClear, this);
             }
         }
 
-        if(store) {
+        if (store) {
             store = Ext.StoreMgr.lookup(store);
             store.on({
-                scope : this,
-                load : this.onLoad,
-                datachanged : this.onDataChange,
-                add : this.onAdd,
-                remove : this.onRemove,
-                update : this.onUpdate,
-                clear : this.onClear
+                scope: this,
+                load: this.onLoad,
+                datachanged: this.onDataChange,
+                add: this.onAdd,
+                remove: this.onRemove,
+                update: this.onUpdate,
+                clear: this.onClear
             });
         }
 
@@ -756,35 +748,35 @@ Ext.define("Chart.ux.Highcharts", {
 
         if (this.loadMask !== false) {
             if (this.loadMask === true) {
-                this.loadMask = new Ext.LoadMask({target:this,store:this.store});
+                this.loadMask = new Ext.LoadMask({ target: this, store: this.store });
             } else {
                 this.loadMask.bindStore(this.store);
             }
         }
-        
-        if(store && !initial) {
+
+        if (store && !initial) {
             this.refresh();
         }
     },
 
     /**
      * Complete refresh series in the chart. This method rebuilds the chart series
-     * array from the current store records. Any store record changes should call 
+     * array from the current store records. Any store record changes should call
      * this method to reflect to the chart.
      */
-    refresh : function() {
+    refresh: function () {
         // Sencha Touch uses config to access properties
-        // _this is used to access the initial series configuration, not the 
+        // _this is used to access the initial series configuration, not the
         // instantiated chart series configuration
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        this.log("Call refresh ");
-        if(this.store && this.chart) {
+        this.log('Call refresh ');
+        if (this.store && this.chart) {
+            var data = new Array(),
+                seriesCount = _this.series.length,
+                i;
 
-            var data = new Array(), seriesCount = _this.series.length, i;
-
-            for( i = 0; i < seriesCount; i++)
-                data.push(new Array());
+            for (i = 0; i < seriesCount; i++) data.push(new Array());
 
             // We only want to go true the data once.
             // So we need to have all columns that we use in line.
@@ -792,24 +784,24 @@ Ext.define("Chart.ux.Highcharts", {
             var items = this.store.data.items;
             var xFieldData = [];
 
-            for(var x = 0; x < items.length; x++) {
+            for (var x = 0; x < items.length; x++) {
                 var record = items[x];
 
-                if(_this.xField) {
+                if (_this.xField) {
                     xFieldData.push(record.data[_this.xField]);
                 }
 
-                for( i = 0; i < seriesCount; i++) {
-                    var serie = _this.series[i], point;
+                for (i = 0; i < seriesCount; i++) {
+                    var serie = _this.series[i],
+                        point;
                     // if serie.config.getData is defined, it doesn't need
                     // reference to dataIndex or yField, it just direct access
                     // to fields inside the implementation
-                    if (serie.dataIndex || serie.yField || 
-                        serie.minDataIndex || serie.config.getData) {
-                        // record.data[dataIndex] is an array, then treat it as an array of 
+                    if (serie.dataIndex || serie.yField || serie.minDataIndex || serie.config.getData) {
+                        // record.data[dataIndex] is an array, then treat it as an array of
                         // data points
                         if (Ext.isArray(record.data[serie.dataIndex])) {
-                            Ext.each(record.data[serie.dataIndex], function(dataPoint) {
+                            Ext.each(record.data[serie.dataIndex], function (dataPoint) {
                                 data[i].push(dataPoint);
                             });
                         } else {
@@ -819,8 +811,7 @@ Ext.define("Chart.ux.Highcharts", {
                         }
                     } else if (serie.type == 'pie') {
                         if (serie.useTotals) {
-                            if(x == 0)
-                                serie.clear();
+                            if (x == 0) serie.clear();
                             point = serie.getData(record, x);
                             serie.bindRecord && (point.record = record);
                         } else if (serie.totalDataField) {
@@ -833,8 +824,8 @@ Ext.define("Chart.ux.Highcharts", {
                     } else if (serie.type == 'gauge' || serie.type == 'solidgauge') {
                         // Gauge is a dial type chart, so the data can only
                         // have one value
-console.log(record);
-                        data[i][0] = serie.getData(record, x); 
+                        console.log(record);
+                        data[i][0] = serie.getData(record, x);
                     } else if (serie.data && serie.data.length) {
                         // This means the series is added within its own data
                         // not from the store
@@ -849,24 +840,23 @@ console.log(record);
 
             // Update the series
             if (!this.updateAnim) {
-                for( i = 0; i < seriesCount; i++) {
-                    if(_this.series[i].useTotals) {
+                for (i = 0; i < seriesCount; i++) {
+                    if (_this.series[i].useTotals) {
                         this.chart.series[i].setData(_this.series[i].getTotals());
-                    } else if(data[i].length > 0 || _this.series[i].updateNoRecord) {
-                        this.chart.series[i].setData(data[i], i == (seriesCount - 1));
+                    } else if (data[i].length > 0 || _this.series[i].updateNoRecord) {
+                        this.chart.series[i].setData(data[i], i == seriesCount - 1);
                         // true == redraw.
                     }
                 }
-                
-                if(_this.xField) {
+
+                if (_this.xField) {
                     //this.updatexAxisData();
                     this.chart.xAxis[0].setCategories(xFieldData, true);
                 }
             } else {
                 var xCatStartIdx = -1;
-                this.log("Update animation with line shift: " + _this.lineShift);
-                for( i = 0; i < seriesCount; i++) {
-
+                this.log('Update animation with line shift: ' + _this.lineShift);
+                for (i = 0; i < seriesCount; i++) {
                     // If this series is hidden, then we just simple update the whole series
                     // without any micro management of the data update
                     if (this.chart.series[i].visible === false) {
@@ -882,42 +872,50 @@ console.log(record);
                             // the current series data set
                             var chartSeriesLength = this.chart.series[i].points.length;
                             var storeSeriesLength = data[i].length;
-			    var connectNulls = this.chart.series[i].options.connectNulls;
-			    
-                            this.log("connectNulls " + connectNulls + " chartSeriesLength " + chartSeriesLength + 
-                                     ", storeSeriesLength " + storeSeriesLength);
+                            var connectNulls = this.chart.series[i].options.connectNulls;
 
-			    // ConnectNulls is quite tricky as the chart.series[i].points will
-			    // not contain any null data points. Hence, the chartSeriesLength is
-			    // always less than storeSeriesLength. So we CANNOT go through the
-			    // series and update each point as it can be undefined
-			    if (connectNulls) {
-				this.chart.series[i].setData(data[i]);
-				continue;
-			    } else {
-				for (var x = 0; x < Math.min(chartSeriesLength, storeSeriesLength); x++) {
+                            this.log(
+                                'connectNulls ' +
+                                    connectNulls +
+                                    ' chartSeriesLength ' +
+                                    chartSeriesLength +
+                                    ', storeSeriesLength ' +
+                                    storeSeriesLength
+                            );
+
+                            // ConnectNulls is quite tricky as the chart.series[i].points will
+                            // not contain any null data points. Hence, the chartSeriesLength is
+                            // always less than storeSeriesLength. So we CANNOT go through the
+                            // series and update each point as it can be undefined
+                            if (connectNulls) {
+                                this.chart.series[i].setData(data[i]);
+                                continue;
+                            } else {
+                                for (var x = 0; x < Math.min(chartSeriesLength, storeSeriesLength); x++) {
                                     this.chart.series[i].points[x].update(data[i][x], false, true);
-				}
-			    }
+                                }
+                            }
 
                             // Gotcha, we need to be careful with pie series, as the totalDataField
                             // can conflict with the following series data points trimming operations
                             if (_this.series[i].type === 'pie') {
                                 this.chart.series[i].setData([]);
-                                for (var x=0;x<data[i].length;x++) {
+                                for (var x = 0; x < data[i].length; x++) {
                                     this.chart.series[i].addPoint(data[i][x], false, false, false);
                                 }
-                                this.chart.series[i].animate = Highcharts.seriesTypes.pie.prototype.animate.bind(this.chart.series[i]);
+                                this.chart.series[i].animate = Highcharts.seriesTypes.pie.prototype.animate.bind(
+                                    this.chart.series[i]
+                                );
                                 this.chart.redraw();
                                 continue;
                             }
 
                             // Append the rest of the points from store to chart
                             if (chartSeriesLength < storeSeriesLength) {
-                                for (var y = 0; y < (storeSeriesLength - chartSeriesLength); y++, x++) {
+                                for (var y = 0; y < storeSeriesLength - chartSeriesLength; y++, x++) {
                                     if (Ext.isObject(data[i][x])) {
                                         // Can be an object if the data point includes colorField dataIndex
-                                        (data[i][x].x === undefined) && (data[i][x].x = x);
+                                        data[i][x].x === undefined && (data[i][x].x = x);
                                         this.chart.series[i].addPoint(data[i][x], false, false, true);
                                     } else {
                                         this.chart.series[i].addPoint(data[i][x], false, false, true);
@@ -926,34 +924,34 @@ console.log(record);
                             }
                             // Remove the excessive points from the chart
                             else if (chartSeriesLength > storeSeriesLength) {
-                                for (var y = 0; y < (chartSeriesLength - storeSeriesLength); y++) {
+                                for (var y = 0; y < chartSeriesLength - storeSeriesLength; y++) {
                                     // Points.length is not immediately updated after remove call, so don't use points.length
                                     var last = chartSeriesLength - y - 1;
-                                    this.log("Remove point at pos " + last);
+                                    this.log('Remove point at pos ' + last);
                                     this.chart.series[i].points[last].remove(false, true);
                                 }
                             }
                         } else {
                             var xAxis = Ext.isArray(this.chart.xAxis) ? this.chart.xAxis[0] : this.chart.xAxis;
                             // We need to see whether compare through xAxis categories or data points x axis value
-                            var startIdx = -1; 
+                            var startIdx = -1;
 
                             if (xAxis.categories) {
                                 // Since this is categories, it means multiple series share the common
                                 // categories. Hence we only do it once to find the startIdx position
                                 if (i == 0) {
-                                    for (var x = 0 ; x < xFieldData.length; x++) {
+                                    for (var x = 0; x < xFieldData.length; x++) {
                                         var found = false;
                                         for (var y = 0; y < xAxis.categories.length; y++) {
                                             if (xFieldData[x] == xAxis.categories[y]) {
-                                                found = true
+                                                found = true;
                                                 break;
                                             }
                                         }
                                         if (!found) {
                                             xCatStartIdx = startIdx = x;
                                             break;
-                                        } 
+                                        }
                                     }
 
                                     var categories = xAxis.categories.slice(0);
@@ -963,50 +961,47 @@ console.log(record);
                                     // Reset the startIdx
                                     startIdx = xCatStartIdx;
                                 }
-                                this.log("startIdx " + startIdx);
+                                this.log('startIdx ' + startIdx);
                                 // Start shifting
                                 if (startIdx !== -1 && startIdx < xFieldData.length) {
                                     for (var x = startIdx; x < xFieldData.length; x++) {
-
-                                        this.chart.series[i].addPoint(data[i][x],
-                                                                      false, true, true);
+                                        this.chart.series[i].addPoint(data[i][x], false, true, true);
                                     }
                                 }
-                            } else { 
+                            } else {
                                 var chartSeries = this.chart.series[i].points;
-                                for (var x = 0 ; x < data[i].length; x++) {
+                                for (var x = 0; x < data[i].length; x++) {
                                     var found = false;
                                     for (var y = 0; y < chartSeries.length; y++) {
                                         if (data[i][x][0] == chartSeries[y].x) {
-                                            found = true
+                                            found = true;
                                             break;
                                         }
                                     }
                                     if (!found) {
                                         startIdx = x;
                                         break;
-                                    } 
+                                    }
                                 }
-                                this.log("startIdx " + startIdx);
+                                this.log('startIdx ' + startIdx);
                                 // Start shifting
                                 if (startIdx !== -1 && startIdx < data[i].length) {
                                     for (var x = startIdx; x < data[i].length; x++) {
                                         this.chart.series[i].addPoint(data[i][x], false, true, true);
                                     }
                                 }
-
                             }
                         }
                     }
                 }
 
                 // For Line Shift it has to be setCategories before addPoint
-                if(_this.xField && !_this.lineShift) {
+                if (_this.xField && !_this.lineShift) {
                     //this.updatexAxisData();
                     this.chart.xAxis[0].setCategories(xFieldData, false);
                 }
 
-                this.log("Call chart redraw");
+                this.log('Call chart redraw');
                 this.chart.redraw();
             }
         }
@@ -1015,23 +1010,22 @@ console.log(record);
     /***
      * Update a selected row.
      */
-    refreshRow : function(record) {
+    refreshRow: function (record) {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
         var index = this.store.indexOf(record);
-        if(this.chart) {
-            for(var i = 0; i < this.chart.series.length; i++) {
+        if (this.chart) {
+            for (var i = 0; i < this.chart.series.length; i++) {
                 var serie = this.chart.series[i];
                 var point = _this.series[i].getData(record, index);
-                if(_this.series[i].type == 'pie' && _this.series[i].useTotals) {
+                if (_this.series[i].type == 'pie' && _this.series[i].useTotals) {
                     _this.series[i].update(record);
                     this.chart.series[i].setData(_this.series[i].getTotals());
-                } else
-                    serie.data[index].update(point);
+                } else serie.data[index].update(point);
             }
 
-            if(_this.xField) {
+            if (_this.xField) {
                 this.updatexAxisData();
             }
         }
@@ -1041,21 +1035,21 @@ console.log(record);
      * A function to delay the call to {@link Chart.ux.Highcharts#method-draw} method
      * @param {Number} delay Set a custom delay
      */
-    update : function(delay) {
+    update: function (delay) {
         var cdelay = delay || this.updateDelay;
-        if(!this.updateTask) {
+        if (!this.updateTask) {
             this.updateTask = new Ext.util.DelayedTask(this.draw, this);
         }
         this.updateTask.delay(cdelay);
     },
 
     // private
-    onDataChange : function() {
-        this.refreshOnChange && (this.refresh() && this.log("onDataChange"));
+    onDataChange: function () {
+        this.refreshOnChange && this.refresh() && this.log('onDataChange');
     },
 
     // private
-    onClear : function() {
+    onClear: function () {
         // In Sencha Touch, load method issue clear event
         // this will call refresh twice which removes the
         // animation effect
@@ -1065,94 +1059,93 @@ console.log(record);
     },
 
     // private
-    onUpdate : function(ds, record) {
+    onUpdate: function (ds, record) {
         this.refreshRow(record);
     },
 
     // private
-    onAdd : function(ds, records, index) {
+    onAdd: function (ds, records, index) {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        var redraw = false, xFieldData = [];
+        var redraw = false,
+            xFieldData = [];
 
-        for(var i = 0; i < records.length; i++) {
+        for (var i = 0; i < records.length; i++) {
             var record = records[i];
-            if(i == records.length - 1)
-                redraw = true;
-            if(_this.xField) {
+            if (i == records.length - 1) redraw = true;
+            if (_this.xField) {
                 xFieldData.push(record.data[_this.xField]);
             }
 
-            for(var x = 0; x < this.chart.series.length; x++) {
-                var serie = this.chart.series[x], s = _this.series[x];
+            for (var x = 0; x < this.chart.series.length; x++) {
+                var serie = this.chart.series[x],
+                    s = _this.series[x];
                 var point = s.getData(record, index + i);
-                if(!(s.type == 'pie' && s.useTotals)) {
+                if (!(s.type == 'pie' && s.useTotals)) {
                     serie.addPoint(point, redraw);
                 }
             }
         }
-        if(_this.xField) {
+        if (_this.xField) {
             this.chart.xAxis[0].setCategories(xFieldData, true);
         }
-
     },
 
     //private
-    _onResize : function() {
-	this.log("call _onResize");
+    _onResize: function () {
+        this.log('call _onResize');
         this.resizable && this.draw();
     },
 
     // private
-    onRemove : function(ds, record, index, isUpdate) {
+    onRemove: function (ds, record, index, isUpdate) {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
-        for(var i = 0; i < _this.series.length; i++) {
+        for (var i = 0; i < _this.series.length; i++) {
             var s = _this.series[i];
-            if(s.type == 'pie' && s.useTotals) {
+            if (s.type == 'pie' && s.useTotals) {
                 s.removeData(record, index);
                 this.chart.series[i].setData(s.getTotals());
             } else {
                 this.chart.series[i].data[index].remove(true);
             }
         }
-        Ext.each(this.chart.series, function(serie) {
+        Ext.each(this.chart.series, function (serie) {
             serie.data[index].remove(true);
         });
 
-        if(_this.xField) {
+        if (_this.xField) {
             this.updatexAxisData();
         }
     },
 
     // private
-    onLoad : function() {
-
+    onLoad: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
         if (!this.chart && this.initAnimAfterLoad) {
-            this.log("Call refresh from onLoad for initAnim");
+            this.log('Call refresh from onLoad for initAnim');
             this.buildInitData();
             this.chart = new Highcharts.Chart(_this.chartConfig, this.afterChartRendered);
             return;
-        } 
+        }
 
-        this.log("Call refresh from onLoad");
+        this.log('Call refresh from onLoad');
         this.refreshOnLoad && this.refresh();
     },
 
     /***
      * Destroy the Highchart component as well as the interal chart component
      */
-    destroy : function() {
+    destroy: function () {
         // Sencha Touch uses config to access properties
-        var _this = (this.statics().sencha.product == 't') ? this.config : this;
+        var _this = this.statics().sencha.product == 't' ? this.config : this;
 
         delete _this.series;
-        if(this.chart) {
+        if (this.chart) {
             this.chart.destroy();
             delete this.chart;
         }
@@ -1162,5 +1155,4 @@ console.log(record);
 
         this.callParent(arguments);
     }
-
 });
